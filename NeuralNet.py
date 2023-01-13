@@ -40,31 +40,65 @@ test_data = datasets.QMNIST(
 train_dataloader = DataLoader(training_data, batch_size=64)
 test_dataloader = DataLoader(test_data, batch_size=64)
 
+# SAMPLING THE DATA VISUALLY
+
 labels_map = {
+    0: "happy",
+    1: "one", 
+    2: "two", 
+    3: "three", 
+    4: "four", 
+    5: 5, 
+    6: 6, 
+    7: 7, 
+    8: 8, 
+    9: 9,
+}
+
+'''labels_map = {
     # TODO: In the Fashion-Mnist example, I set these labels = to strings...
     # should it be the same for this?
-    0: "0",
-    1: "1",
-    2: "2",
-    3: "3",
-    4: "4",
-    5: "5",
+    0: "Hey cutie",
+    1: "One",
+    2: "Two",
+    3: "Three",
+    4: "Four",
+    5: "Five",
     6: "6", 
     7: "7",
     8: "8",
     9: "9",
-}
+}'''
 
 
 # this sets ups a display of 9 random data in a 3x3 array
-figure = plt.figure(figsize=(8,8))
+figure = plt.figure(figsize=(8, 8))
 cols, rows = 3, 3
 
+'''
+TODO: ERORR: MY LABELS ARE ONLY SHOWING THE FIRST INDEX OF MY LABELS MAP
+INSTEAD OF THE CORRECT LABELS (run the code to see)
+
+Note: I am moving on for now. Luckily I'm pretty sure that error is only 
+with showing the plot and it won't affect the neural network.
+'''
 for i in range(1, cols * rows + 1): 
-    sample_idx = torch.randint(len(training_data), size=(1, )).item()
+    sample_idx = torch.randint(len(training_data), size=(1,)).item()
     img, label = training_data[sample_idx]
     figure.add_subplot(rows, cols, i) # question: what does this line mean?
     plt.title(labels_map[label])
     plt.axis("off")
     plt.imshow(img.squeeze(),cmap="gray")
 plt.show()
+
+###########################################
+# TRANSFORMS 
+
+ds = datasets.QMNIST(
+    root="data",
+    train=True,
+    download=True,
+    transform=ToTensor,
+    target_transform=(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
+    # TODO: I have no idea what the line means
+)
