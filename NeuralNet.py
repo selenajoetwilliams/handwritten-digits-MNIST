@@ -100,5 +100,144 @@ ds = datasets.QMNIST(
     download=True,
     transform=ToTensor,
     target_transform=(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-    # TODO: I have no idea what the line means
+    # TODO: I have no idea what the line above means
 )
+
+###########################################
+# BUILD MODEL
+# this layer makes a neural network subclass in which the model is initialized and 
+# the forward pass is defined 
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device") # note: I am still using cpu 
+
+class NeuralNetwork(nn.Module):
+
+    # initializing the model
+    def __init__(self):
+        super(NeuralNetwork, self).__init__()
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            # these are the different model layers
+            nn.Linear(28*28, 512), # image dimensions, # of model dimentions?
+            nn.ReLU(),
+            nn.Linear(512, 512),
+            nn.ReLU(),
+            nn.Linear(512, 10),
+        )
+
+    # defining the forward pass
+    def forward(self, x):
+        x = self.flatten(x)
+        logits = self.linear_relu_stack(x)
+        return logits
+
+model = NeuralNetwork().to(device)
+# should the line above be: model = NeuralNetwork()
+print(model)
+
+X = torch.rand(1, 28, 28, device=device)
+logits = model(X) 
+pred_probab = nn.Softmax(dim=1)(logits)
+y_pred = pred_probab.argmax(1)
+print(f"Predicted class: {y_pred}")
+
+###########################################
+# MODEL LAYERS
+
+# this samples a mini batch to see what happens as it goes through the model
+input_image = torch.rand(3, 28, 28)
+print(input_image.size())
+
+# flattening the dimensions from 28x28 2D array to a 1D array of 784 pixels
+flatten = nn.Flatten()
+flat_image = flatten(input_image)
+print(flat_image.size)
+
+# linear layer 
+# this redcues the number of features from 784 to 20
+layer1 = nn.Linear(in_features=28*28, out_features=20)
+hidden1 = layer1(flat_image)
+print(hidden1.size)
+
+# relu layer
+print(f"Before ReLU: {hidden1}\n\n")
+hidden1 = nn.ReLU()(hidden1)
+print(f"After ReLU: {hidden1}")
+
+# sequential layer
+seq_modules = nn.Sequential(
+    flatten,
+    layer1,
+    nn.ReLU(),
+    nn.Linear(20,10)
+)
+input_image = torch.rand(3,28,28) # question: why do we use torch.rand here?
+logits = seq_modules(input_image)
+
+# softmax layer
+softmax = nn.Softmax(dim=1)
+pred_probab = softmax(logits)
+
+# model parameters
+# here we iterate over each parameter and print the size & a preview of its values
+print(f"Model structure: {model}\n\n")
+
+for name, param in model.named_parameters():
+    print(f"Laer: {name} | Size{param.size()} | Values: {param[:2]} \n")
+    # question: what does the param[:2] in the line above mean?
+
+###########################################
+# AUTOGRAD (automatic differentiation)
+
+x = torch.ones(5) # input tensor
+y = torch.zeros(3) # expected output
+w = torch.randn(5, 3, requires_grad=True)
+b = torch.randn(3, requires_grad=True)
+z = torch.matmul(x, w)+b
+loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
+
+# printing out the gradient function?
+print(f"Gradient function for z = {z.grad_fn}")
+print(f"Gradient function for loss = {loss.grad_fn}")
+
+# computing the gradients
+print(f"\nComputing the gradients...")
+print(f"The gradient of the weights is: {w.grad}")
+print(f"The gradient of the biasees is: {b.grad}")
+
+###########################################
+# OPTIMIZING MODEL PARAMETERS
+
+# defining the hyper parameters
+learning_rate = 1e-3
+batch_size = 64
+epochs = 5
+
+# defining the type of loss function
+# question: how is this different than the binary_cross_entropy_with_logits(z, y) 
+# in the autograd section?
+loss_fn = nn.CrossEntropyLoss
+
+# defining the optimizer object
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+# full implmenentation of optimization algorithm
+def train_loop(dataloader, model, loss_fn, optimizer):
+    size = len(dataloader.dataset)
+    for batch, (X, y) in enumerate(dataloader):
+        # Computer prediction and loss
+        pred = model(X)
+        loss = loss_fn(pred, y)
+
+        # Backpropagation
+        optimizer.zero_grad()
+        loss.backward
+        optimizer.step
+
+        if batch % 100 == 0:
+            loss, current = loss.item(), batch * len(X)
+            print(f"loss: {loss:>7f} [{current:>5d}/{size:5d}]")
+            # question: what does this chunk of code mean?
+
+# defining the training and test loop            
