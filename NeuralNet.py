@@ -184,7 +184,7 @@ pred_probab = softmax(logits)
 print(f"Model structure: {model}\n\n")
 
 for name, param in model.named_parameters():
-    print(f"Laer: {name} | Size{param.size()} | Values: {param[:2]} \n")
+    print(f"Layer: {name} | Size: {param.size()} | Values: {param[:2]} \n")
     # question: what does the param[:2] in the line above mean?
 
 ###########################################
@@ -239,8 +239,8 @@ def train_loop(dataloader, model, loss_fn, optimizer):
 
         # Backpropagation
         optimizer.zero_grad()
-        loss.backward
-        optimizer.step
+        loss.backward()
+        optimizer.step()
 
         if batch % 100 == 0:
             loss, current = loss.item(), batch * len(X)
@@ -267,7 +267,7 @@ def test_loop(dataloader, model, loss_fn):
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr = learning_rate)
 
-epochs = 4
+epochs = 10
 for t in range(epochs):
     print(f"Epoch {t+1}\n--------------------------------------")
     train_loop(train_dataloader, model, loss_fn, optimizer)
