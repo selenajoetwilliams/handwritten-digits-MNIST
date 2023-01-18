@@ -1,10 +1,37 @@
-'''
+''
+OVERVIEW:
+
 This is Selena's attempt at creating a neural network semi-from scratch
 for the hand-written digits MNIST data set.
+
+ABOUT THE DATASET: (QMNIST)
 
 Note: I use the qmnit dataset which is the hand-written MNIST data set
 with 60,000 images. It is part of the official torchvision datasets in 
 pytorch documentation.
+
+MAIN BUGS:
+
+1. The labels for pyplot are messed up. Instead of indexing image 0 with
+   label 0, every image has label 0 showing. I played around with this to
+   try to figure it out so right now every image is labeled "happy" 
+   instead of the correct #.
+
+2. The accuracy is 100.0% every single time. Is this an error? 
+   Note that the loss gets smaller each epoch. 
+
+3. I haven't figured out how to properly push to github while using a 
+   .gitignore file for the model_weights.pth file (which saves the model
+   weights). I solved this by commenting out my code which saves & loads the
+   model & deleting the model_weights.pth file. To save & load the model,
+   simply uncomment the code & a model_weights.pth file will download. 
+   question: How can I solve this? Should I use a .gitignore file whenever 
+   uploading to github? I don't really want the file locally since it's just a 
+   tutorial & since it takes up a lot of space.
+
+
+NOTES:
+I also have questions sprinkled throughout my code, noted with 'question'
 '''
 
 import torch
@@ -25,7 +52,6 @@ training_data = datasets.QMNIST(
     root="data",
     train=True,
     download=True, 
-    # TODO: I am trying setting donwload=False to see if I can avoid git lfs issues
     transform=ToTensor()
 )
 
@@ -33,7 +59,6 @@ test_data = datasets.QMNIST(
     root="data",
     train=False,
     download=True,
-        # TODO: I am trying setting donwload=False to see if I can avoid git lfs issues
     transform=ToTensor()
 )
 
@@ -56,9 +81,10 @@ labels_map = {
 }
 
 '''labels_map = {
-    # TODO: In the Fashion-Mnist example, I set these labels = to strings...
+    # NOTE: In the Fashion-Mnist example, I set these labels = to strings...
     # should it be the same for this?
-    0: "Hey cutie",
+
+    0: "test label",
     1: "One",
     2: "Two",
     3: "Three",
@@ -76,11 +102,13 @@ figure = plt.figure(figsize=(8, 8))
 cols, rows = 3, 3
 
 '''
-TODO: ERORR: MY LABELS ARE ONLY SHOWING THE FIRST INDEX OF MY LABELS MAP
+BUG 1:
+
+MY LABELS ARE ONLY SHOWING THE FIRST INDEX OF MY LABELS MAP
 INSTEAD OF THE CORRECT LABELS (run the code to see)
 
-Note: I am moving on for now. Luckily I'm pretty sure that error is only 
-with showing the plot and it won't affect the neural network.
+Luckily I'm pretty sure that error is only with displaying the 
+plot -- I don't think it will affect my network results.
 '''
 for i in range(1, cols * rows + 1): 
     sample_idx = torch.randint(len(training_data), size=(1,)).item()
@@ -100,7 +128,7 @@ ds = datasets.QMNIST(
     download=True,
     transform=ToTensor,
     target_transform=(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-    # TODO: I have no idea what the line above means
+    # question: what does the line above mean?
 )
 
 ###########################################
@@ -193,9 +221,7 @@ for name, param in model.named_parameters():
 x = torch.ones(5) # input tensor
 y = torch.zeros(3) # expected output
 w = torch.randn(5, 3, requires_grad=True)
-print(f"w is: {w} and w.grad is: {w.grad}")
 b = torch.randn(3, requires_grad=True)
-print(f"b is: {b} and b.grad is: {b.grad}")
 z = torch.matmul(x, w)+b
 loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 
@@ -248,6 +274,12 @@ def train_loop(dataloader, model, loss_fn, optimizer):
             # question: what does this chunk of code mean?
 
 # defining the test loop
+'''
+BUG 2: 
+
+I'm not sure where or why this is happening, but MY ACCURACY IS 100.0%
+EVERY TIME
+'''
 def test_loop(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
@@ -261,7 +293,7 @@ def test_loop(dataloader, model, loss_fn):
 
     test_loss /= num_batches
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")   
+    print(f"Test Error:\nAccuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")   
 
 # initializing the loss function optimizer
 loss_fn = nn.CrossEntropyLoss()
@@ -274,7 +306,27 @@ for t in range(epochs):
     test_loop(test_dataloader, model, loss_fn)
 print("Done!")
 
-print(f"w is: {w}")
-print(f"b is: {b}")
-print(f"w.grad is: {w.grad}")
-print(f"b.grad is: {b.grad}")
+###########################################
+# SAVING AND LOADING MODEL
+
+'''
+BUG 3
+
+I had to comment out this code because I don't want a model_weights.pth
+file to download locally & because even if I did want it to, I don't know 
+how to use a .gitignore file to push without including it.
+
+question: How do I use .gitignore to push to git without uploading the 
+model_weights.pth file?
+'''
+
+'''
+# saving the model
+model = models.vgg16(pretrained=True)
+torch.save(model.state_dict, 'model_weights.pth')
+
+# loading the model
+model = models.vgg16()
+model.load_state_dict(torch.load('model_weights.pth'))
+model.eval()
+'''
