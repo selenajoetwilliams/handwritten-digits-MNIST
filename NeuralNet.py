@@ -193,7 +193,9 @@ for name, param in model.named_parameters():
 x = torch.ones(5) # input tensor
 y = torch.zeros(3) # expected output
 w = torch.randn(5, 3, requires_grad=True)
+print(f"w is: {w} and w.grad is: {w.grad}")
 b = torch.randn(3, requires_grad=True)
+print(f"b is: {b} and b.grad is: {b.grad}")
 z = torch.matmul(x, w)+b
 loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 
@@ -203,6 +205,7 @@ print(f"Gradient function for loss = {loss.grad_fn}")
 
 # computing the gradients
 print(f"\nComputing the gradients...")
+loss.backward()
 print(f"The gradient of the weights is: {w.grad}")
 print(f"The gradient of the biasees is: {b.grad}")
 
@@ -212,7 +215,7 @@ print(f"The gradient of the biasees is: {b.grad}")
 # defining the hyper parameters
 learning_rate = 1e-3
 batch_size = 64
-epochs = 5
+epochs = 2
 
 # defining the type of loss function
 # question: how is this different than the binary_cross_entropy_with_logits(z, y) 
@@ -241,11 +244,11 @@ def train_loop(dataloader, model, loss_fn, optimizer):
 
         if batch % 100 == 0:
             loss, current = loss.item(), batch * len(X)
-            print(f"loss: {loss:>7f} [{current:>5d}/{size:5d}]")
+            print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
             # question: what does this chunk of code mean?
 
 # defining the test loop
-def test_loop(dataloader, model, loss_fnn):
+def test_loop(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     test_loss, correct = 0, 0
@@ -258,16 +261,20 @@ def test_loop(dataloader, model, loss_fnn):
 
     test_loss /= num_batches
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:8f} \n")   
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")   
 
 # initializing the loss function optimizer
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr = learning_rate)
 
-epochs = 10
+epochs = 4
 for t in range(epochs):
-    print(f"Epoch {t+1}\n-----------------------------------")
+    print(f"Epoch {t+1}\n--------------------------------------")
     train_loop(train_dataloader, model, loss_fn, optimizer)
     test_loop(test_dataloader, model, loss_fn)
 print("Done!")
 
+print(f"w is: {w}")
+print(f"b is: {b}")
+print(f"w.grad is: {w.grad}")
+print(f"b.grad is: {b.grad}")
