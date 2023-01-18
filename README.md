@@ -2,7 +2,6 @@
 
 This is Selena's first attempt and creating a neurel network for the the handwritten-digits MNIST dataset.
 
-'''
 OVERVIEW:
 
 This is Selena's attempt at creating a neural network semi-from scratch
@@ -33,7 +32,6 @@ MAIN BUGS:
    uploading to github? I don't really want the file locally since it's just a 
    tutorial & since it takes up a lot of space.
 
-
 NOTES:
+
 I also have questions sprinkled throughout my code, noted with 'question'
-'''
